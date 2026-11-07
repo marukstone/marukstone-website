@@ -77,21 +77,44 @@ if (stage && track) {
       // Keep the headline's center clear: most words use two outer rows above/below,
       // with only a few words on the side rails. This avoids the old crowded 4-side grid.
       let orbitX, orbitY;
-      if (index < 10) {
-        const slot = index;
-        orbitX = width * (.045 + (slot + .5) * .91 / 10);
-        orbitY = height * (slot % 2 === 0 ? .085 : .205);
-      } else if (index < 20) {
-        const slot = index - 10;
-        orbitX = width * (.045 + (slot + .5) * .91 / 10);
-        orbitY = height * (slot % 2 === 0 ? .915 : .795);
+
+      // Desktop: 12 words above, 12 below, 10 on the side rails.
+      // Keep the central headline area clear.
+      if (window.innerWidth > 760) {
+        if (index < 12) {
+          const slot = index;
+          const col = slot % 6;
+          const row = Math.floor(slot / 6);
+          orbitX = width * (.08 + col * .168);
+          orbitY = height * (row === 0 ? .075 : .18);
+        } else if (index < 24) {
+          const slot = index - 12;
+          const col = slot % 6;
+          const row = Math.floor(slot / 6);
+          orbitX = width * (.08 + col * .168);
+          orbitY = height * (row === 0 ? .82 : .925);
+        } else {
+          const slot = index - 24;
+          const side = slot % 2;
+          const row = Math.floor(slot / 2);
+          orbitX = width * (side ? .965 : .035);
+          orbitY = height * (.30 + row * .105);
+        }
       } else {
-        const slot = index - 20;
-        const side = slot % 2;
-        const row = Math.floor(slot / 2);
-        orbitX = width * (side ? .88 : .12);
-        orbitY = height * (.31 + row * .19);
+        // Mobile: keep all words in upper and lower bands,
+        // leaving the center available for the headline.
+        const half = index < 17;
+        const slot = half ? index : index - 17;
+        const col = slot % 6;
+        const row = Math.floor(slot / 6);
+        orbitX = width * (.08 + col * .168);
+        orbitY = height * (
+          half
+            ? (.055 + row * .09)
+            : (.775 + row * .09)
+        );
       }
+
       const safeX = clamp(orbitX, chip.offsetWidth * .5 + 12, width - chip.offsetWidth * .5 - 12);
       const safeY = clamp(orbitY, chip.offsetHeight * .5 + 12, height - chip.offsetHeight * .5 - 12);
       const orbitTravelX = safeX - x;
@@ -154,7 +177,7 @@ if (solutionField && solutionChips.length && !reduceMotion.matches) {
       const radius = Math.max(24, Math.min(62, Math.max(chip.offsetWidth, chip.offsetHeight) * .34));
       // Seeded variety makes each word move independently without a uniform orbit.
       const angle = (i * 2.399963) % (Math.PI * 2);
-      const speed = 1.15 + ((i * 7) % 9) * 0.16;
+      const speed = (1.15 + ((i * 7) % 9) * 0.16) * 1.4;
       particleState.push({ chip, x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed * 0.86, r: radius, baseX: x, baseY: y });
     });
   };
